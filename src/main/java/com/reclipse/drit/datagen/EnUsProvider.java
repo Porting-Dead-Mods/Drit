@@ -19,15 +19,16 @@ public final class EnUsProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
-        addBlock(Drit, "Drit");
-        addBlock(FramLand, "Fram Land");
+        addBlock("drit", "Drit");
+        addBlock("fram_land", "Fram Land");
+        add("itemGroup.drit", "Drit");
     }
 
     private void addItem(String key, String val) {
-        add("item.DritMod." + key, val);
+        add("item.drit." + key, val);
     }
 
     private void addBlock(String key, String val) {
-        add("block.DritMod." + key, val);
+        add("block.drit." + key, val);
     }
 }

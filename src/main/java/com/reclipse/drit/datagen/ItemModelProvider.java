@@ -1,13 +1,18 @@
 package com.reclipse.drit.datagen;
 
+import com.reclipse.drit.DritBlocks;
 import com.reclipse.drit.DritMod;
 import com.reclipse.drit.DritItems;
+import com.reclipse.drit.content.DritBlock;
+import com.reclipse.drit.content.FramlandBlock;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
 import net.neoforged.neoforge.client.model.generators.ModelFile;
@@ -25,7 +30,11 @@ public class ItemModelProvider extends net.neoforged.neoforge.client.model.gener
 
     @Override
     protected void registerModels() {
-        blockItems();
+        for (Supplier<BlockItem> item : DritItems.BLOCK_ITEMS) {
+            if (item.get().getBlock() instanceof DritBlock) vanillaParentItemBlock(item.get(), Blocks.DIRT, "");
+            else if (item.get().getBlock() instanceof FramlandBlock) vanillaParentItemBlock(item.get(), Blocks.FARMLAND, "");
+            else parentItemBlock(item.get());
+        }
     }
 
     private void bucket(Fluid f) {
@@ -54,6 +63,12 @@ public class ItemModelProvider extends net.neoforged.neoforge.client.model.gener
         return parentItemBlock(item, "");
     }
 
+    public ItemModelBuilder vanillaParentItemBlock(Item item, Block vanilla, String suffix) {
+        ResourceLocation name = Objects.requireNonNull(BuiltInRegistries.ITEM.getKey(item));
+        ResourceLocation vanillaBlock = Objects.requireNonNull(BuiltInRegistries.BLOCK.getKey(vanilla));
+        return getBuilder(name.toString())
+                .parent(new ModelFile.UncheckedModelFile(extend(ResourceLocation.withDefaultNamespace("block/" + vanillaBlock.getPath()), suffix)));
+    }
     public ItemModelBuilder parentItemBlock(Item item, String suffix) {
         ResourceLocation name = Objects.requireNonNull(BuiltInRegistries.ITEM.getKey(item));
         return getBuilder(name.toString())
