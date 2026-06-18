@@ -21,16 +21,22 @@ public class DritConfig {
 			.comment(" How many times to tick/grow the crop")
 			.defineInRange("tickingQuantity", 1, 0, Integer.MAX_VALUE);
 
+	private static final ModConfigSpec.BooleanValue SHOULD_REQUIRE_REDSTONE = BUILDER
+			.comment(" If true, growth only triggers on a rising-edge redstone pulse (default behaviour). If false, growth is attempted every random tick using the chance from growthTickChance.")
+			.define("shouldRequireRedstone", true);
+
 	static final ModConfigSpec SPEC = BUILDER.build();
 
 	public static int growthTickChance;
 	public static boolean randomOrAge;
 	public static int tickingQuantity;
+	public static boolean shouldRequireRedstone;
 
 	@SubscribeEvent
 	static void onLoad(final ModConfigEvent event) {
 		growthTickChance = GROWTH_TICK_CHANCE.get();
 		randomOrAge = RANDOM_OR_AGE.get();
 		tickingQuantity = TICKING_QUANTITY.get();
+		shouldRequireRedstone = SHOULD_REQUIRE_REDSTONE.get();
 	}
 }

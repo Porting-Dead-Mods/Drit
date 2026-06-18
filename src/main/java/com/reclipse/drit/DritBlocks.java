@@ -18,7 +18,7 @@ public final class DritBlocks {
 	public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(DritMod.MODID);
 
 	public static final DeferredBlock<DritBlock> Drit = registerBlockAndItem("drit", com.reclipse.drit.content.DritBlock::new,
-            BlockBehaviour.Properties.ofFullCopy(Blocks.DIRT));
+            BlockBehaviour.Properties.ofFullCopy(Blocks.DIRT).randomTicks());
 
 	public static final DeferredBlock<FramlandBlock> FramLand = registerBlockAndItem("fram_land", FramlandBlock::new,
 			BlockBehaviour.Properties.ofFullCopy(Blocks.FARMLAND));

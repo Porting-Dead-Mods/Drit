@@ -81,41 +81,42 @@ public class FramlandBlock extends FarmBlock {
 	public void grow(@NotNull BlockState pState, ServerLevel pLevel, BlockPos pPos, @NotNull RandomSource pRandom) {
 		Block blockAbove = pLevel.getBlockState(pPos.above()).getBlock();
 
-		if (!pState.getValue(WAS_POWERED) && pState.getValue(POWERED)) {
-			int height = 1;
+		boolean redstoneTriggered = !pState.getValue(WAS_POWERED) && pState.getValue(POWERED);
+		if (DritConfig.shouldRequireRedstone && !redstoneTriggered) {
+			return;
+		}
+
+		int height = 1;
+		if (DritConfig.shouldRequireRedstone) {
 			pLevel.setBlock(pPos, pState.setValue(WAS_POWERED, true), 4);
+		}
 
-			// Check for plants that grow > 1 block high
-			while (true) {
-				BlockPos currentPos = pPos.above(height);
+		// Check for plants that grow > 1 block high
+		while (true) {
+			BlockPos currentPos = pPos.above(height);
 
-				// Check if the block above is within the world height limit
-				if (currentPos.getY() >= pLevel.getMaxBuildHeight()) break;
+			if (currentPos.getY() >= pLevel.getMaxBuildHeight()) break;
 
-				if (pRandom.nextInt() % DritConfig.growthTickChance == 0) {
-					if (DritConfig.randomOrAge) {
-						if (pLevel.getBlockState(currentPos).getBlock() instanceof CropBlock block) {
-							if (!block.isMaxAge(pLevel.getBlockState(currentPos))) {
-								for (int i = 0; i < DritConfig.tickingQuantity; i++)
-									pLevel.setBlockAndUpdate(currentPos, block.getStateForAge(block.getAge(pLevel.getBlockState(currentPos)) + 1));
-							}
-						} else {
-							DritMod.LOGGER.info("Not a Crop Block, but config is set to grow by age!");
+			if (pRandom.nextInt() % DritConfig.growthTickChance == 0) {
+				if (DritConfig.randomOrAge) {
+					if (pLevel.getBlockState(currentPos).getBlock() instanceof CropBlock block) {
+						if (!block.isMaxAge(pLevel.getBlockState(currentPos))) {
+							for (int i = 0; i < DritConfig.tickingQuantity; i++)
+								pLevel.setBlockAndUpdate(currentPos, block.getStateForAge(block.getAge(pLevel.getBlockState(currentPos)) + 1));
 						}
 					} else {
-						for (int i = 0; i < DritConfig.tickingQuantity; i++)
-							pLevel.getBlockState(currentPos).randomTick(pLevel, currentPos, pRandom);
+						DritMod.LOGGER.info("Not a Crop Block, but config is set to grow by age");
 					}
+				} else {
+					for (int i = 0; i < DritConfig.tickingQuantity; i++)
+						pLevel.getBlockState(currentPos).randomTick(pLevel, currentPos, pRandom);
 				}
-
-				// Check if the block above is the same to continue
-				Block nextBlock = pLevel.getBlockState(currentPos).getBlock();
-				if (nextBlock.getClass().equals(blockAbove.getClass())) break;
-
-				height++;
 			}
-		} else {
-//			DritMod.LOGGER.info("Not powered");
+
+			Block nextBlock = pLevel.getBlockState(currentPos).getBlock();
+			if (nextBlock.getClass().equals(blockAbove.getClass())) break;
+
+			height++;
 		}
 	}
 
@@ -133,11 +134,15 @@ public class FramlandBlock extends FarmBlock {
 				level.setBlock(pos, (BlockState)state.setValue(MOISTURE, i - 1), 2);
 			} else if (!shouldMaintainFarmland(level, pos)) {
 				turnToDrit((Entity)null, state, level, pos);
+				return;
 			}
 		} else if (i < 7) {
 			level.setBlock(pos, (BlockState)state.setValue(MOISTURE, 7), 2);
 		}
 
+		if (!DritConfig.shouldRequireRedstone) {
+			this.grow(level.getBlockState(pos), level, pos, random);
+		}
 	}
 
 	private static boolean shouldMaintainFarmland(BlockGetter level, BlockPos pos) {
